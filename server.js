@@ -36,10 +36,14 @@ var urlSchema = new mongoose.Schema({
 
 var URL = mongoose.model('URL', urlSchema);
 
+// Only allow numbers
+shortid.characters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ$@'); // to allow only alphanumeric codes
+
 // Project route
 app.post("/api/shorturl/new", function(req,res) {
   var url = req.body.url;
   
+  // Promises as the "urlExists" function can take a few seconds to process
   var checkUrl = new Promise(function(resolve, reject) {
     urlExists(url, function(err,data) {
       if (err) { reject('Something went wrong') }
@@ -49,7 +53,6 @@ app.post("/api/shorturl/new", function(req,res) {
   
   // If is valid or nothing went wrong, search the url or save it.
   checkUrl.then(function(value) {
-    console.log(value);
     // Looking for a url that was already shortened
     URL.findOne( { originalUrl: url }, function(err, doc) {
        if (doc) {
@@ -58,11 +61,9 @@ app.post("/api/shorturl/new", function(req,res) {
             "short_url" : doc.shortUrl
          });
        } else {
-          var shortId = shortid.generate();
-          console.log(shortId);
           var newShortenedUrl = new URL({
             originalUrl: url,
-            shortUrl : shortId
+            shortUrl : shortid.generate()
           });
 
           // Saving shortened url
