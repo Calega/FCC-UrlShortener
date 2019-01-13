@@ -6,7 +6,7 @@ var mongoose = require('mongoose');
 var bodyParser = require('body-parser')
 var cors = require('cors')
 var shortid = require("shortid")
-var validUrl = require('valid-url')
+var urlExists = require('url-exists');
 
 var app = express();
 
@@ -40,10 +40,16 @@ var URL = mongoose.model('URL', urlSchema);
 app.post("/api/shorturl/new", function(req,res) {
   var url = req.body.url;
   
-  // Todo : Url is not getting verified properly
-  // Todo : ShortId is not returned immediately in the post request
+  var checkUrl = new Promise(function(resolve, reject) {
+    urlExists(url, function(err,data) {
+      if (err) { reject('Something went wrong') }
+      data ? resolve('Valid Url') : reject('Invalid Url')
+    });
+  });
   
-  if ( validUrl.isUri(url) ) {
+  // If is valid or nothing went wrong, search the url or save it.
+  checkUrl.then(function(value) {
+    console.log(value);
     // Looking for a url that was already shortened
     URL.findOne( { originalUrl: url }, function(err, doc) {
        if (doc) {
@@ -53,6 +59,7 @@ app.post("/api/shorturl/new", function(req,res) {
          });
        } else {
           var shortId = shortid.generate();
+          console.log(shortId);
           var newShortenedUrl = new URL({
             originalUrl: url,
             shortUrl : shortId
@@ -62,19 +69,17 @@ app.post("/api/shorturl/new", function(req,res) {
           newShortenedUrl.save();
           returnObject(newShortenedUrl);
        }
-    });  
-  } else {
-     errorObject();
-  }
-  
+    });
+  }, reason => { returnErrorObject() });
+
   function returnObject(result) {
      res.json({
        "original_url" : result.originalUrl,
-       "short_url" : result.short_url
+       "short_url" : result.shortUrl
      });
   }
   
-  function errorObject() {
+  function returnErrorObject() {
     res.json({
       "error":"invalid URL"
     });
@@ -82,7 +87,7 @@ app.post("/api/shorturl/new", function(req,res) {
   
 });
 
-// Implement a get route in the /shorurl/ to get the current url shortened
+// Implement a get route in the /shorturl/ to get the current url shortened
 app.get("/api/shorturl/:shortUrl", function(req,res) {
   var shortUrl = req.params.shortUrl;
   
