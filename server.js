@@ -1,26 +1,22 @@
 'use strict';
 
-var express = require('express');
-var mongo = require('mongodb');
-var mongoose = require('mongoose');
-var bodyParser = require('body-parser')
-var cors = require('cors')
-var shortid = require("shortid")
-var urlExists = require('url-exists');
+const express = require('express');
+const mongo = require('mongodb');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser')
+const cors = require('cors')
+const shortid = require("shortid")
+const urlExists = require('url-exists');
 
-var app = express();
+const app = express();
 
 // Basic Configuration 
-var port = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 
-/** this project needs a db !! **/ 
 mongoose.connect(process.env.MONGO_URI);
 
 app.use(cors());
-
-/** this project needs to parse POST bodies **/
 app.use(bodyParser.urlencoded({ extended: false }));
-
 app.use('/public', express.static(process.cwd() + '/public'));
 
 app.get('/', function(req, res){
@@ -41,13 +37,16 @@ shortid.characters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWX
 
 // Project route
 app.post("/api/shorturl/new", function(req,res) {
-  var url = req.body.url;
+  let url = req.body.url;
   
   // Promises as the "urlExists" function can take a few seconds to process
-  var checkUrl = new Promise(function(resolve, reject) {
+  let checkUrl = new Promise(function(resolve, reject) {
     urlExists(url, function(err,data) {
-      if (err) { reject('Something went wrong') }
-      data ? resolve('Valid Url') : reject('Invalid Url')
+      if (err) { 
+        reject('Something went wrong');
+      } else {
+        data ? resolve('Valid Url') : reject('Invalid Url');
+      }
     });
   });
   
@@ -61,7 +60,7 @@ app.post("/api/shorturl/new", function(req,res) {
             "short_url" : doc.shortUrl
          });
        } else {
-          var newShortenedUrl = new URL({
+          let newShortenedUrl = new URL({
             originalUrl: url,
             shortUrl : shortid.generate()
           });
@@ -74,23 +73,18 @@ app.post("/api/shorturl/new", function(req,res) {
   }, reason => { returnErrorObject() });
 
   function returnObject(result) {
-     res.json({
-       "original_url" : result.originalUrl,
-       "short_url" : result.shortUrl
-     });
+     res.json({ "original_url" : result.originalUrl, "short_url" : result.shortUrl });
   }
   
   function returnErrorObject() {
-    res.json({
-      "error":"invalid URL"
-    });
+    res.json({ "error":"invalid URL" });
   }
   
 });
 
 // Implement a get route in the /shorturl/ to get the current url shortened
 app.get("/api/shorturl/:shortUrl", function(req,res) {
-  var shortUrl = req.params.shortUrl;
+  let shortUrl = req.params.shortUrl;
   
   URL.findOne( { shortUrl: shortUrl }, function(err, doc) {
     if (doc) {
@@ -103,5 +97,5 @@ app.get("/api/shorturl/:shortUrl", function(req,res) {
 });
 
 app.listen(port, function () {
-  console.log('Node.js listening ...');
+  console.log( 'Node.js listening ... ' + port );
 });
