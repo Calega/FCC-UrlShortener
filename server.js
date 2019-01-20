@@ -1,4 +1,6 @@
-const environment = require('dotenv').config()
+'use strict';
+
+require('dotenv').config()
 const express = require('express');
 const mongo = require('mongodb');
 const mongoose = require('mongoose');
