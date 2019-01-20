@@ -16,16 +16,8 @@
     "shortid": "^2.2.14",
     "url-exists": "^1.0.3"
   },
-  "engines": {
-    "node": "6.4.1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://hyperdev.com/#!/project/welcome-project"
-  },
   "keywords": [
     "node",
-    "hyperdev",
     "express"
   ],
   "license": "MIT"
