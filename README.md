@@ -19,3 +19,8 @@ POST [project_url]/api/shorturl/new - body (urlencoded) :  url=https://www.googl
 #### Will redirect to:
 
 http://forum.freecodecamp.com
+
+
+#### Developer Notes:
+
+The API was also deployed to: https://calega-url-shortener.herokuapp.com/
