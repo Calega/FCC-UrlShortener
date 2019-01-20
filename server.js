@@ -13,7 +13,7 @@ const app = express();
 // Basic Configuration 
 const port = process.env.PORT || 3000;
 
-mongoose.connect(process.env.MONGO_URI);
+mongoose.connect(process.env.MONGO_URL);
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
