@@ -1,5 +1,6 @@
 'use strict';
 
+require('dotenv').config()
 const express = require('express');
 const mongo = require('mongodb');
 const mongoose = require('mongoose');
@@ -7,13 +8,30 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const shortid = require("shortid")
 const urlExists = require('url-exists');
-
 const app = express();
 
 // Basic Configuration 
 const port = process.env.PORT || 3000;
 
-mongoose.connect(process.env.MONGO_URL);
+const options = {
+    autoIndex: false, // Don't build indexes
+    reconnectTries: 30, // Retry up to 30 times
+    reconnectInterval: 500, // Reconnect every 500ms
+    poolSize: 10, // Maintain up to 10 socket connections
+    // If not connected, return errors immediately rather than waiting for reconnect
+    bufferMaxEntries: 0
+}
+
+const connectWithRetry = () => {
+  mongoose.connect(process.env.MONGO_URL, options).then(()=>{
+    console.log('MongoDB is connected')
+  }).catch(err=>{
+    console.log('MongoDB connection unsuccessful, retry after 5 seconds.')
+    setTimeout(connectWithRetry, 5000)
+  })
+}
+
+connectWithRetry();
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
